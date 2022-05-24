@@ -74,7 +74,14 @@ async function run() {
             res.send(orders);
         });
 
-        
+        // adding new product
+        app.post("/product", async (req, res) => {
+            const product = req.body;
+            const result = await electronicsCollection.insertOne(product);
+            res.send(result);
+        });
+
+       
     } finally {
     }
 }
