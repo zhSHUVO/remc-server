@@ -42,6 +42,13 @@ async function run() {
             const electronic = await electronicsCollection.findOne(query);
             res.send(electronic);
         });
+
+        // store orders
+        app.post("/orders", async (req, res) => {
+            const orders = req.body;
+            const result = await ordersCollection.insertOne(orders);
+            res.send(result);
+        });
     } finally {
     }
 }
