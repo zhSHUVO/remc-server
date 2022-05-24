@@ -65,6 +65,16 @@ async function run() {
             const result = await ordersCollection.deleteOne(query);
             res.send(result);
         });
+
+        // loading all orders
+        app.get("/allorders", async (req, res) => {
+            const query = {};
+            const cursor = await ordersCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
+        
     } finally {
     }
 }
