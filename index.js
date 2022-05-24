@@ -27,7 +27,12 @@ async function run() {
             .db("remc-database")
             .collection("orders");
 
-        
+        // loading all electronics
+        app.get("/product", async (req, res) => {
+            const query = {};
+            const cursor = await electronicsCollection.find(query);
+            const electronics = await cursor.toArray();
+            res.send(electronics);
         });
     } finally {
     }
