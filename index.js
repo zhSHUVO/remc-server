@@ -101,6 +101,13 @@ async function run() {
             res.send(users);
         });
 
+        // load user profile
+        app.get("/users/:email", async (req, res) => {
+            const email = req.params.email;
+            const user = await usersCollection.findOne({ email: email });
+            res.send(user);
+        });
+
         // loading all electronics
         app.get("/product", async (req, res) => {
             const query = {};
@@ -108,8 +115,6 @@ async function run() {
             const electronics = await cursor.toArray();
             res.send(electronics);
         });
-
-        // load user profile
 
         // load one electronics
         app.get("/product/:id", async (req, res) => {
