@@ -5,6 +5,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -44,6 +45,10 @@ async function run() {
             .collection("orders");
 
         const usersCollection = client.db("remc-database").collection("users");
+
+        const paymentsCollection = client
+            .db("remc-database")
+            .collection("payments");
 
         // send user to database
         app.put("/user/:email", async (req, res) => {
@@ -144,13 +149,32 @@ async function run() {
             }
         });
 
-        // order payment
-        app.get("/orders/:id", verifyJWT, async(req, res) => {
+        // update order status
+        app.patch("/orders/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
-            const order = await ordersCollection.findOne(query)
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    transactionId: payment.transactionId,
+                    status: "Paid",
+                },
+            };
+            const updatedOrder = await ordersCollection.updateOne(
+                filter,
+                updateDoc
+            );
+            const result = await paymentsCollection.insertOne(payment);
+            res.send(updatedOrder);
+        });
+
+        // order payment
+        app.get("/orders/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const order = await ordersCollection.findOne(query);
             res.send(order);
-        })
+        });
 
         // delete user orders
         app.delete("(/orders/:id)", async (req, res) => {
@@ -181,6 +205,19 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await electronicsCollection.deleteOne(query);
             res.send(result);
+        });
+
+        // payment intent
+        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+            const order = req.body;
+            const price = order.price;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ["card"],
+            });
+            res.send({ clientSecret: paymentIntent.client_secret });
         });
     } finally {
     }
