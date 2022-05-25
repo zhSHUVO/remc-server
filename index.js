@@ -60,13 +60,13 @@ async function run() {
                 options
             );
             const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, {
-                expiresIn: "1h",
+                expiresIn: "6h",
             });
             res.send({ result, token });
         });
 
         // make user admin
-        app.put("/user/admin/:email", async (req, res) => {
+        app.put("/user/admin/:email", verifyJWT, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const updateDoc = {
