@@ -45,7 +45,7 @@ async function run() {
 
         const usersCollection = client.db("remc-database").collection("users");
 
-        // user
+        // send user to database
         app.put("/user/:email", async (req, res) => {
             const user = req.body;
             const email = req.params.email;
@@ -65,6 +65,23 @@ async function run() {
             res.send({ result, token });
         });
 
+        // make user admin
+        app.put("/user/admin/:email", async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: "admin" },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
+
+        // load all users
+        app.get("/users", verifyJWT, async (req, res) => {
+            const users = await usersCollection.find().toArray();
+            res.send(users);
+        });
+
         // loading all electronics
         app.get("/product", async (req, res) => {
             const query = {};
@@ -72,6 +89,8 @@ async function run() {
             const electronics = await cursor.toArray();
             res.send(electronics);
         });
+
+        // load user profile
 
         // load one electronics
         app.get("/product/:id", async (req, res) => {
