@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -26,6 +27,28 @@ async function run() {
         const ordersCollection = client
             .db("remc-database")
             .collection("orders");
+
+        const usersCollection = client.db("remc-database").collection("users");
+
+        // user
+        app.put("/user/:email", async (req, res) => {
+            const user = req.body;
+            const email = req.params.email;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await usersCollection.updateOne(
+                filter,
+                updateDoc,
+                options
+            );
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN, {
+                expiresIn: "1h",
+            });
+            res.send({ result, token });
+        });
 
         // loading all electronics
         app.get("/product", async (req, res) => {
