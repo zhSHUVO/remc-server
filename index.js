@@ -230,6 +230,12 @@ async function run() {
             const result = await reviewsCollection.insertOne(review);
             res.send(result);
         });
+
+        // load all reviews
+        app.get("/review", async (req, res) => {
+            const review = await reviewsCollection.find().toArray();
+            res.send(review);
+        });
     } finally {
     }
 }
