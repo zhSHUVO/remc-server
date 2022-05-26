@@ -117,6 +117,27 @@ async function run() {
             res.send(user);
         });
 
+        // update user profile
+        app.put("/update/users/:email", async (req, res) => {
+            const email = req.params.email;
+            console.log(email);
+            const data = req.body;
+            console.log(data);
+            const filter = { email: email };
+            const updateDoc = {
+                $set: {
+                    name: data.name,
+                    image: data.img,
+                    education: data.education,
+                    location: data.location,
+                    number: data.number,
+                },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            console.log(updateDoc);
+            res.send(result);
+        });
+
         // loading all electronics
         app.get("/product", async (req, res) => {
             const query = {};
