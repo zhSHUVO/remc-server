@@ -236,6 +236,19 @@ async function run() {
             const review = await reviewsCollection.find().toArray();
             res.send(review);
         });
+
+        // loading user reviews
+        app.get("/reviews", verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            if (email === decodedEmail) {
+                const query = { email: email };
+                const review = await reviewsCollection.find(query).toArray();
+                res.send(review);
+            } else {
+                return res.status(403).send({ message: "Forbidden access" });
+            }
+        });
     } finally {
     }
 }
