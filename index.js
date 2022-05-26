@@ -46,6 +46,10 @@ async function run() {
 
         const usersCollection = client.db("remc-database").collection("users");
 
+        const reviewsCollection = client
+            .db("remc-database")
+            .collection("reviews");
+
         const paymentsCollection = client
             .db("remc-database")
             .collection("payments");
@@ -218,6 +222,13 @@ async function run() {
                 payment_method_types: ["card"],
             });
             res.send({ clientSecret: paymentIntent.client_secret });
+        });
+
+        // reviews
+        app.post("/review", async (req, res) => {
+            const review = req.body;
+            const result = await reviewsCollection.insertOne(review);
+            res.send(result);
         });
     } finally {
     }
